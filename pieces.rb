@@ -3,11 +3,13 @@
 # initialize chess pieces
 class Pieces
   attr_reader :white_pieces, :black_pieces
-  attr_accessor :possible_moves, :red
+  attr_accessor :possible_moves, :possible_attack, :white_graveyard, :black_graveyard
 
   def initialize
     @possible_moves = []
-    @red = [] # pieces that can be attacked
+    @possible_attack = []
+    @white_graveyard = []
+    @black_graveyard = []
     @white_pieces = {'a1' => Rook.new('white'), 'b1' => Knight.new('white'), 'c1' => Bishop.new('white'), 'd1' => Queen.new('white'), 
                      'e1' => King.new('white'), 'f1' => Bishop.new('white'), 'g1' => Knight.new('white'), 'h1' => Rook.new('white') }
     @black_pieces = {'a8' => Rook.new('black'), 'b8' => Knight.new('black'), 'c8' => Bishop.new('black'), 'd8' => Queen.new('black'),
@@ -26,24 +28,27 @@ class Pawn
 
   def initialize(color)
     @moves = 0
-    @is_alive = true
     @name = 'pawn'
     @color = color
+    @direction = @color == 'black' ? -1 : 1
     @unicode = color == 'black' ? "\e[30m\u265F " : "\u265F "
   end
 
   def possible_moves(position, board)
     moves = []
-    direction = @color == 'black' ? -1 : 1
-    2.times { |i| moves.push("#{position[0]}#{position[1].to_i + direction*(i+1)}") }
-    moves = [] if board.pieces.white_pieces.include?(moves[0]) || board.pieces.black_pieces.include?(moves[0])
+    2.times { |i| moves.push("#{position[0]}#{position[1].to_i + @direction*(i+1)}") }
     moves.pop if board.pieces.white_pieces.include?(moves[1]) || board.pieces.black_pieces.include?(moves[1])
-    moves = moves[0] if moves.length == 2 && @moves.positive?
+    moves = [] if board.pieces.white_pieces.include?(moves[0]) || board.pieces.black_pieces.include?(moves[0])
+    moves = [moves[0]] if moves.length == 2 && @moves.positive?
     moves
   end
 
-  def red_squares(position)
-    red = nil
+  def possible_attack(position, _, board)
+    enemy = @color == 'black' ? board.pieces.white_pieces : board.pieces.black_pieces
+    [[1, @direction], [-1, @direction]].map do |d| 
+      label = "#{(position[0].ord + d[0]).chr}#{position[1].to_i + d[1]}"
+      enemy.include?(label) ? label : nil
+    end.compact
   end
 end
 
@@ -53,7 +58,6 @@ class Rook
 
   def initialize(color)
     @color = color
-    @is_alive = true
     @name = 'rook'
     @unicode = color == 'black' ? "\e[30m\u265C " : "\u265C "
   end
@@ -75,7 +79,7 @@ class Rook
     moves
   end
 
-  def red_squares(position)
+  def possible_attack(position, possible_moves, board)
     red = nil
   end
 end
@@ -86,7 +90,6 @@ class Knight
 
   def initialize(color)
     @color = color
-    @is_alive = true
     @name = 'knight'
     @unicode = color == 'black' ? "\e[30m\u265E " : "\u265E "
   end
@@ -106,7 +109,7 @@ class Knight
     moves
   end
 
-  def red_squares(position)
+  def possible_attack(position, possible_moves, board)
     red = nil
   end
 end
@@ -117,7 +120,6 @@ class Bishop
 
   def initialize(color)
     @color = color
-    @is_alive = true
     @name = 'bishop'
     @unicode = color == 'black' ? "\e[30m\u265D " : "\u265D "
   end
@@ -139,7 +141,7 @@ class Bishop
     moves
   end
 
-  def red_squares(position)
+  def possible_attack(position, possible_moves, board)
     red = nil
   end
 end
@@ -151,7 +153,6 @@ class Queen
 
   def initialize(color)
     @color = color
-    @is_alive = true
     @name = 'queen'
     @unicode = color == 'black' ? "\e[30m\u265B " : "\u265B "
     @bishop_dummy = Bishop.new(@color)
@@ -162,7 +163,7 @@ class Queen
     @bishop_dummy.possible_moves(pos, board) + @rook_dummy.possible_moves(pos, board)
   end
 
-  def red_squares(position)
+  def possible_attack(position, possible_moves, board)
     red = nil
   end
 end
@@ -173,7 +174,6 @@ class King
 
   def initialize(color)
     @color = color
-    @is_alive = true
     @name = 'king'
     @unicode = color == 'black' ? "\e[30m\u265A " : "\u265A "
   end
@@ -185,7 +185,7 @@ class King
     moves.select { |move| board.labels.include?(move) && teammates[move].nil? }.compact
   end
 
-  def red_squares(position)
+  def possible_attack(position, possible_moves, board)
     red = nil
   end
 end

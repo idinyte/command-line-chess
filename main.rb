@@ -16,10 +16,13 @@ class Game
   def play
     until @game_over
       puts "#{@turn}\'s turn"
-      @pieces = @turn == 'white' ? @board.pieces.white_pieces : @board.pieces.black_pieces
+      @pieces = @board.pieces.white_pieces
+      @enemy = @board.pieces.black_pieces
+      @pieces, @enemy = @enemy, @pieces if @turn == 'black'
       get_input_1_and_2
-      reset_colors
+      attack if @board.pieces.possible_attack.include?(@input_2)
       move
+      reset_colors
       @turn = @turn == 'white' ? 'black' : 'white'
     end
   end
@@ -33,6 +36,7 @@ class Game
   def get_input
     input = gets.chomp
     while @pieces[input].nil?
+      exit if input == 'exit'
       puts "#{@turn} player, please select your piece"
       input = gets.chomp
     end
@@ -43,12 +47,14 @@ class Game
 
   def show_guidlines(input)
     @board.pieces.possible_moves = @pieces[input].possible_moves(input, @board)
-    @board.pieces.red = @pieces[input].red_squares(input)
+    @board.pieces.possible_attack = @pieces[input].possible_attack(input, @board.pieces.possible_moves, @board)
+    @board.pieces.possible_moves = (@board.pieces.possible_moves + @board.pieces.possible_attack).uniq
     @board.display
   end
 
   def get_second_input(input)
     second_input = gets.chomp
+    exit if second_input == 'exit'
     while @pieces[second_input].nil?
       break if @board.pieces.possible_moves.include?(second_input)
       puts "Invalid move"
@@ -66,13 +72,19 @@ class Game
   def move
     @pieces[@input_1].moves = 1 if @pieces[@input_1].name == 'pawn'
     @pieces[@input_2] = @pieces.delete(@input_1)
-    @board.display
+  end
+
+  def attack
+    graveyard = @turn == 'white' ? @board.pieces.black_graveyard : @board.pieces.white_graveyard
+    @board.pieces.possible_moves.push(@input_2)
+    graveyard.push(@enemy.delete(@input_2).unicode)
   end
 
   def reset_colors
     @board.input = nil
     @board.pieces.possible_moves = []
-    @board.pieces.red = []
+    @board.pieces.possible_attack = []
+    @board.display
   end
 end
 
