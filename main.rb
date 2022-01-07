@@ -46,8 +46,8 @@ class Game
   end
 
   def show_guidlines(input)
-    @board.pieces.possible_moves = @pieces[input].possible_moves(input, @board)
-    @board.pieces.possible_attack = @pieces[input].possible_attack(input, @board.pieces.possible_moves, @board)
+    @board.pieces.possible_moves = @pieces[input].possible_moves(input)
+    @board.pieces.possible_attack = @pieces[input].possible_attack(input)
     @board.pieces.possible_moves = (@board.pieces.possible_moves + @board.pieces.possible_attack).uniq
     @board.display
   end
