@@ -3,13 +3,14 @@
 # initialize chess pieces
 class Pieces
   attr_reader :white_pieces, :black_pieces
-  attr_accessor :possible_moves, :possible_attack, :white_graveyard, :black_graveyard
+  attr_accessor :possible_moves, :possible_attack, :white_graveyard, :black_graveyard, :en_pessante
 
   def initialize(board)
     @possible_moves = []
     @possible_attack = []
     @white_graveyard = []
     @black_graveyard = []
+    @en_pessante = ['', '']
     @white_pieces = get_white(board)
     @black_pieces = get_black(board)
   end
@@ -54,13 +55,15 @@ class Pawn
     2.times { |i| moves.push("#{position[0]}#{position[1].to_i + @direction * (i + 1)}") }
     moves.pop if all_pieces.include?(moves[1])
     moves = [nil] if all_pieces.include?(moves[0])
-    @moves.positive? ? [moves[0]] : moves
+    return [moves[0]] if @moves.positive?
+
+    moves
   end
 
   def possible_attack(position)
     [[1, @direction], [-1, @direction]].map do |d| 
       label = "#{(position[0].ord + d[0]).chr}#{position[1].to_i + d[1]}"
-      @enemy.include?(label) ? label : nil
+      @enemy.include?(label) || label == @board.pieces.en_pessante[0] ? label : nil
     end.compact
   end
 end

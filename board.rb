@@ -4,14 +4,15 @@ require_relative 'pieces'
 
 class Board
   attr_reader :labels, :pieces
-  attr_writer :input
+  attr_writer :input, :turn
 
-  def initialize()
+  def initialize
     @input = nil
     @labels = ('a'..'h').to_a.product(('1'..'8').to_a).map(&:join).sort_by{|s| s[1]}.each_slice(8).to_a.reverse.flatten
     @pieces = Pieces.new(self)
     @c_option = 0
-    @color_options = [["\u001b[48;5;130m", "\u001b[48;5;137m", "\u001b[48;5;134m", "\u001b[48;5;141m"]]
+    @color_options = [["\u001b[48;5;130m", "\u001b[48;5;173m", "\u001b[48;5;136m", "\u001b[48;5;180m"]]
+    @turn = 'white'
     display
   end
 
@@ -40,16 +41,21 @@ class Board
     return @color_options[@c_option][2] if label == @input && label[0].ord.even? == label[1].to_i.even? # blue
     return @color_options[@c_option][3] if label == @input && label[0].ord.even? != label[1].to_i.even? # cyan
     return "\u001b[48;5;160m" if !@pieces.possible_attack.nil? && @pieces.possible_attack.include?(label) # red
-    return "\u001b[48;5;250m" if @pieces.possible_moves.include?(label) # gray
+    #return "\u001b[48;5;250m" if @pieces.possible_moves.include?(label) # gray
     return @color_options[@c_option][0] if label[0].ord.even? == label[1].to_i.even? # dark square
 
     @color_options[@c_option][1] # light square
   end
 
   def get_whats_on_square(label)
-    on_square = '  '
-    on_square = @pieces.white_pieces[label].unicode if @pieces.white_pieces[label].nil? == false
-    on_square = @pieces.black_pieces[label].unicode if @pieces.black_pieces[label].nil? == false
-    on_square
+    if @pieces.possible_moves.include?(label) && !@pieces.possible_attack.nil? && !@pieces.possible_attack.include?(label)
+      @turn == 'white' ? "\u001b[38;5;255m\u2744 " : "\u001b[38;5;232m\u2742 "
+    elsif !@pieces.white_pieces[label].nil?
+      @pieces.white_pieces[label].unicode
+    elsif !@pieces.black_pieces[label].nil?
+      @pieces.black_pieces[label].unicode
+    else
+      '  '
+    end
   end
 end

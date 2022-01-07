@@ -3,11 +3,11 @@
 require_relative 'pieces'
 require_relative 'board'
 class Game
-
+  attr_reader :game
   def initialize
     @game_over = false
-    @board = Board.new
     @turn = 'white'
+    @board = Board.new
     @input_1 = nil
     @input_2 = nil
     play()
@@ -24,6 +24,7 @@ class Game
       move
       reset_colors
       @turn = @turn == 'white' ? 'black' : 'white'
+      @board.turn = @turn
     end
   end
 
@@ -77,13 +78,24 @@ class Game
   def attack
     graveyard = @turn == 'white' ? @board.pieces.black_graveyard : @board.pieces.white_graveyard
     @board.pieces.possible_moves.push(@input_2)
-    graveyard.push(@enemy.delete(@input_2).unicode)
+    enemy_pos = @enemy[@input_2].nil? ? @board.pieces.en_pessante[1] : @input_2
+    p enemy_pos
+    graveyard.push(@enemy.delete(enemy_pos).unicode)
   end
 
   def reset_colors
     @board.input = nil
-    @board.pieces.possible_moves = []
     @board.pieces.possible_attack = []
+    moves = @board.pieces.possible_moves
+    p 'colors'
+    p @board.pieces.en_pessante 
+    @board.pieces.en_pessante = if @pieces[@input_2].name == 'pawn' && moves.length == 2 && @input_2 == moves[1]
+                                  @board.pieces.en_pessante = moves
+                                else
+                                  ['', '']
+                                end
+    p @board.pieces.en_pessante
+    @board.pieces.possible_moves = []
     @board.display
   end
 end
