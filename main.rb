@@ -14,12 +14,11 @@ class Game
     @king_in_check = false
     @king_in_check_position = nil
     play_premade
-    play
+   # play
   end
 
   def play_premade
-    # premade = [['f2', 'f3'], ['e7', 'e6'], ['d2', 'd3'], ['d8', 'h4']]
-    premade = [['e1', 'd1'], ['f2', 'e2']]
+    premade = [['f2', 'f3'], ['e7', 'e6'], ['d2', 'd3'], ['d8', 'h4']]
     premade.each do |i1, i2|
       puts "#{@turn}\'s turn"
       @pieces = @board.pieces.white_pieces
@@ -110,8 +109,25 @@ class Game
   end
 
   def move
-    @pieces[@input_1].moves = 1 if @pieces[@input_1].name == 'pawn'
     @pieces[@input_2] = @pieces.delete(@input_1)
+    pawn_stuff if @pieces[@input_2].name == 'pawn'
+  end
+
+  def pawn_stuff
+    @pieces[@input_2].moves += 1
+    if @input_2[1] == '8' || @input_2[1] == '1'
+      puts 'Choose: [1] - Queen, [2] - Rook,  [3] - Bishop, [4] - Knight'
+      input = gets.chomp
+      until ['1', '2', '3', '4'].include?(input)
+        puts 'Choose a number between 1 and 4'
+        input = gets.chomp
+      end
+      @pieces[@input_2] = Queen.new(@turn, @board) if input == '1'
+      @pieces[@input_2] = Rook.new(@turn, @board) if input == '2'
+      @pieces[@input_2] = Bishop.new(@turn, @board) if input == '3'
+      @pieces[@input_2] = Knight.new(@turn, @board) if input == '4'
+      puts @pieces
+    end
   end
 
   def attack
@@ -136,9 +152,9 @@ class Game
 
   def enemy_in_check?
     t_e = get_teammates_enemies
-    @board.pieces.possible_moves = @pieces[@input_2].possible_moves(@input_2, t_e[0], t_e[1])
+    @board.pieces.possible_moves = @pieces[@input_2].possible_attack(@input_2, t_e[0], t_e[1], nil, 2)
     enemy_king_position = @enemy.key(@enemy.values.select { |e| e.name == 'king' }[0])
-    @king_in_check = @pieces[@input_2].possible_attack(@input_2, t_e[0], t_e[1]).include?(enemy_king_position)
+    @king_in_check = @pieces[@input_2].possible_attack(@input_2, t_e[0], t_e[1], nil, 2).include?(enemy_king_position)
     @king_in_check_position = @king_in_check ? enemy_king_position : nil
     reset_colors
   end
