@@ -4,13 +4,40 @@ require_relative 'pieces'
 require_relative 'board'
 class Game
   attr_reader :game
+
   def initialize
     @game_over = false
     @turn = 'white'
     @board = Board.new
     @input_1 = nil
     @input_2 = nil
-    play()
+    @king_in_check = false
+    @king_in_check_position = nil
+    play_premade
+    play
+  end
+
+  def play_premade
+    # premade = [['f2', 'f3'], ['e7', 'e6'], ['d2', 'd3'], ['d8', 'h4']]
+    premade = [['e1', 'd1'], ['f2', 'e2']]
+    premade.each do |i1, i2|
+      puts "#{@turn}\'s turn"
+      @pieces = @board.pieces.white_pieces
+      @enemy = @board.pieces.black_pieces
+      @pieces, @enemy = @enemy, @pieces if @turn == 'black'
+      @input_1 = i1
+      @board.input = @input_1
+      show_guidlines(@input_1)
+      @input_2 = i2
+      @board.input = i2
+      attack if @board.pieces.possible_attack.include?(@input_2)
+      move
+      reset_colors
+      enemy_in_check?
+      @turn = @turn == 'white' ? 'black' : 'white'
+      @board.turn = @turn
+    end
+    play
   end
 
   def play
@@ -23,6 +50,7 @@ class Game
       attack if @board.pieces.possible_attack.include?(@input_2)
       move
       reset_colors
+      enemy_in_check?
       @turn = @turn == 'white' ? 'black' : 'white'
       @board.turn = @turn
     end
@@ -47,10 +75,21 @@ class Game
   end
 
   def show_guidlines(input)
-    @board.pieces.possible_moves = @pieces[input].possible_moves(input)
-    @board.pieces.possible_attack = @pieces[input].possible_attack(input)
+    update_possible_moves(input)
+    @board.display(@king_in_check, @king_in_check_position)
+  end
+
+  def update_possible_moves(input)
+    t_e = get_teammates_enemies
+    @board.pieces.possible_moves = @pieces[input].possible_moves(input, t_e[0], t_e[1])
+    @board.pieces.possible_attack = @pieces[input].possible_attack(input, t_e[0], t_e[1], @board.pieces.possible_moves)
     @board.pieces.possible_moves = (@board.pieces.possible_moves + @board.pieces.possible_attack).uniq
-    @board.display
+  end
+
+  def get_teammates_enemies
+    teammates = @turn == 'white' ? @board.pieces.white_pieces : @board.pieces.black_pieces
+    enemies = @turn != 'white' ? @board.pieces.white_pieces : @board.pieces.black_pieces
+    return teammates, enemies
   end
 
   def get_second_input(input)
@@ -64,7 +103,7 @@ class Game
     @board.input = second_input
     unless @pieces[second_input].nil?
       @input_1 = second_input
-      get_input_1_and_2(false, second_input) 
+      get_input_1_and_2(false, second_input)
     else
       @input_2 = second_input
     end
@@ -79,7 +118,6 @@ class Game
     graveyard = @turn == 'white' ? @board.pieces.black_graveyard : @board.pieces.white_graveyard
     @board.pieces.possible_moves.push(@input_2)
     enemy_pos = @enemy[@input_2].nil? ? @board.pieces.en_pessante[1] : @input_2
-    p enemy_pos
     graveyard.push(@enemy.delete(enemy_pos).unicode)
   end
 
@@ -87,16 +125,22 @@ class Game
     @board.input = nil
     @board.pieces.possible_attack = []
     moves = @board.pieces.possible_moves
-    p 'colors'
-    p @board.pieces.en_pessante 
     @board.pieces.en_pessante = if @pieces[@input_2].name == 'pawn' && moves.length == 2 && @input_2 == moves[1]
                                   @board.pieces.en_pessante = moves
                                 else
                                   ['', '']
                                 end
-    p @board.pieces.en_pessante
     @board.pieces.possible_moves = []
-    @board.display
+    @board.display(@king_in_check, @king_in_check_position)
+  end
+
+  def enemy_in_check?
+    t_e = get_teammates_enemies
+    @board.pieces.possible_moves = @pieces[@input_2].possible_moves(@input_2, t_e[0], t_e[1])
+    enemy_king_position = @enemy.key(@enemy.values.select { |e| e.name == 'king' }[0])
+    @king_in_check = @pieces[@input_2].possible_attack(@input_2, t_e[0], t_e[1]).include?(enemy_king_position)
+    @king_in_check_position = @king_in_check ? enemy_king_position : nil
+    reset_colors
   end
 end
 
