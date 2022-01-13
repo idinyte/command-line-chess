@@ -13,12 +13,12 @@ class Game
     @input_2 = nil
     @king_in_check = false
     @king_in_check_position = nil
-    play_premade
-   # play
+    # play_premade
+    play
   end
 
   def play_premade
-    premade = [['f2', 'f3'], ['e7', 'e6'], ['d2', 'd3'], ['d8', 'h4']]
+    premade = [['e2', 'e4'], ['e7', 'e6'], ['f1', 'c4'], ['f8', 'c5'], ['g1', 'f3'], ['g8', 'f6']]
     premade.each do |i1, i2|
       puts "#{@turn}\'s turn"
       @pieces = @board.pieces.white_pieces
@@ -110,11 +110,12 @@ class Game
 
   def move
     @pieces[@input_2] = @pieces.delete(@input_1)
+    @pieces[@input_2].moves += 1 if defined?(@pieces[@input_2].moves)
     pawn_stuff if @pieces[@input_2].name == 'pawn'
+    castle if @pieces[@input_2].name == 'king' && @pieces[@input_2].castle
   end
 
   def pawn_stuff
-    @pieces[@input_2].moves += 1
     if @input_2[1] == '8' || @input_2[1] == '1'
       puts 'Choose: [1] - Queen, [2] - Rook,  [3] - Bishop, [4] - Knight'
       input = gets.chomp
@@ -127,6 +128,16 @@ class Game
       @pieces[@input_2] = Bishop.new(@turn, @board) if input == '3'
       @pieces[@input_2] = Knight.new(@turn, @board) if input == '4'
       puts @pieces
+    end
+  end
+
+  def castle
+    col = @turn == 'white' ? '1' : '8'
+    case @input_2
+    when "g#{col}"
+      @pieces["f#{col}"] = @pieces.delete("h#{col}")
+    when "c#{col}"
+      @pieces["d#{col}"] = @pieces.delete("a#{col}")
     end
   end
 
