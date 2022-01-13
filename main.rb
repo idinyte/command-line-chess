@@ -14,12 +14,14 @@ class Game
     @king_in_check = false
     @king_in_check_position = nil
     @history = (1..10).to_a
-    play_premade
-    # play
+    @copy = []
+    # play_premade
+    play
   end
 
   def play_premade
-    premade = [['h5', 'h6'], ['a5', 'a6'], ['h6', 'h5'], ['a6', 'a5'], ['h5', 'h6'], ['a5', 'a6'], ['h6', 'h5'], ['a6', 'a5'], ['h5', 'h6']]
+    premade = [["e2", "e4"], ["d7", "d5"], ["d2", "d3"], ["d5", "e4"], ["d3", "e4"], ["f7", "f5"], ["e4", "f5"], ["d8", "d1"], ["e1", "d1"], ["g7", "g6"], ["f5", "g6"], ["c8", "f5"], ["g6", "h7"], ["h8", "h7"], ["c1", "h6"], ["h7", "h6"], ["g1", "f3"], ["f5", "c2"], ["d1", "c1"], ["c2", "b1"], ["a1", "b1"], ["h6", "h2"], ["c1", "d1"], ["h2", "h8"], ["h1", "h8"], ["e8", "d8"], ["h8", "h6"], ["f8", "h6"], ["f1", "a6"], ["d8", "c8"], ["a6", "b7"], ["c8", "d8"], ["b7", "a8"], ["d8", "c8"], ["b1", "c1"], ["h6", "c1"], ["g2", "g4"], ["e7", "e5"], ["g4", "g5"], ["e5", "e4"], ["g5", "g6"], ["e4", "e3"], ["g6", "g7"], ["e3", "e2"], ["d1", "c1"], ["g8", "e7"], ["g7", "g8"], ["e7", "g8"], ["c1", "b1"], ["a7", "a6"], ["f3", "g5"], ["a6", "a5"], ["b1", "a1"], ["a5", "a4"], ["a8", "g2"], ["e2", "e1"]]
+
     premade.each do |i1, i2|
       puts "#{@turn}\'s turn"
       @pieces = @board.pieces.white_pieces
@@ -118,6 +120,7 @@ class Game
   def move
     @pieces[@input_2] = @pieces.delete(@input_1)
     @history.push([@input_1, @input_2])
+    @copy.push([@input_1, @input_2])
     @history = @history.drop(1)
     @pieces[@input_2].moves += 1 if defined?(@pieces[@input_2].moves)
     pawn_stuff if @pieces[@input_2].name == 'pawn'

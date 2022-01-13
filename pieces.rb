@@ -16,8 +16,8 @@ class Pieces
     @en_pessante = ['', '']
     @white_pieces = get_white(board)
     @black_pieces = get_black(board)
-    @white_pieces = { 'h5' => King.new('white', board) }
-    @black_pieces = { 'g8' => Queen.new('black', board), 'a1' => Queen.new('black', board), 'e4' => King.new('black', board), 'a5' =>  Rook.new('black', board), 'h4' => Pawn.new('black', board) }
+    #@white_pieces = { 'e4' => King.new('white', board), 'f3' => Knight.new('white', board) }
+    #@black_pieces = { 'g8' => Queen.new('black', board) }
   end
 
   def get_white(board)
@@ -174,10 +174,10 @@ class Bishop
     moves = []
     7.times { |i| @dir.each { |d| moves.push("#{(pos[0].ord + d[0] * (i + 1)).chr}#{pos[1].to_i + d[1] * (i + 1)}") } }
     moves.map! { |move| move if @board.labels.include?(move) && teammates[move].nil? && enemies[move].nil? }
-    moves.map! do |m| 
+    moves.each_with_index { |_, index| moves[index] = nil if index > 3 && moves[index - 4].nil? }
+    moves.map! do |m|
       @board.pieces.our_king_in_check?(teammates, enemies, pos, m) ? nil : m
     end if depth == 1
-    moves.each_with_index { |_, index| moves[index] = nil if index > 3 && moves[index - 4].nil? }
     moves
   end
 
