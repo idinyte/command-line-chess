@@ -13,12 +13,13 @@ class Game
     @input_2 = nil
     @king_in_check = false
     @king_in_check_position = nil
-    # play_premade
-    play
+    @history = (1..10).to_a
+    play_premade
+    # play
   end
 
   def play_premade
-    premade = [['e2', 'e4'], ['e7', 'e6'], ['f1', 'c4'], ['f8', 'c5'], ['g1', 'f3'], ['g8', 'f6']]
+    premade = [['h5', 'h6'], ['a5', 'a6'], ['h6', 'h5'], ['a6', 'a5'], ['h5', 'h6'], ['a5', 'a6'], ['h6', 'h5'], ['a6', 'a5'], ['h5', 'h6']]
     premade.each do |i1, i2|
       puts "#{@turn}\'s turn"
       @pieces = @board.pieces.white_pieces
@@ -33,6 +34,7 @@ class Game
       move
       reset_colors
       enemy_in_check?
+      game_over?
       @turn = @turn == 'white' ? 'black' : 'white'
       @board.turn = @turn
     end
@@ -41,7 +43,7 @@ class Game
 
   def play
     until @game_over
-      puts "#{@turn}\'s turn"
+      puts "#{@turn.capitalize}\'s turn"
       @pieces = @board.pieces.white_pieces
       @enemy = @board.pieces.black_pieces
       @pieces, @enemy = @enemy, @pieces if @turn == 'black'
@@ -50,6 +52,7 @@ class Game
       move
       reset_colors
       enemy_in_check?
+      game_over?
       @turn = @turn == 'white' ? 'black' : 'white'
       @board.turn = @turn
     end
@@ -65,7 +68,8 @@ class Game
     input = gets.chomp
     while @pieces[input].nil?
       exit if input == 'exit'
-      puts "#{@turn} player, please select your piece"
+      draw if input == 'draw'
+      puts "#{@turn.capitalize} player, please select your piece"
       input = gets.chomp
     end
     @board.input = input
@@ -94,7 +98,10 @@ class Game
   def get_second_input(input)
     second_input = gets.chomp
     exit if second_input == 'exit'
+    draw if second_input == 'draw'
     while @pieces[second_input].nil?
+      exit if second_input == 'exit'
+      draw if second_input == 'draw'
       break if @board.pieces.possible_moves.include?(second_input)
       puts "Invalid move"
       second_input = gets.chomp
@@ -110,6 +117,8 @@ class Game
 
   def move
     @pieces[@input_2] = @pieces.delete(@input_1)
+    @history.push([@input_1, @input_2])
+    @history = @history.drop(1)
     @pieces[@input_2].moves += 1 if defined?(@pieces[@input_2].moves)
     pawn_stuff if @pieces[@input_2].name == 'pawn'
     castle if @pieces[@input_2].name == 'king' && @pieces[@input_2].castle
@@ -127,7 +136,6 @@ class Game
       @pieces[@input_2] = Rook.new(@turn, @board) if input == '2'
       @pieces[@input_2] = Bishop.new(@turn, @board) if input == '3'
       @pieces[@input_2] = Knight.new(@turn, @board) if input == '4'
-      puts @pieces
     end
   end
 
@@ -168,6 +176,38 @@ class Game
     @king_in_check = @pieces[@input_2].possible_attack(@input_2, t_e[0], t_e[1], nil, 2).include?(enemy_king_position)
     @king_in_check_position = @king_in_check ? enemy_king_position : nil
     reset_colors
+  end
+
+  def game_over?
+    all_pos_moves_enemy = []
+    @enemy.clone.each do |key, val|
+      p_m = val.possible_moves(key, @enemy, @pieces)
+      p_a = val.possible_attack(key, @enemy, @pieces, p_m)
+      all_pos_moves_enemy.push(p_m + p_a)
+    end
+    if all_pos_moves_enemy.flatten.compact.empty?
+      @game_over = true
+      puts "#{@turn.capitalize} is a winner" if @king_in_check
+      puts "It's a draw" if !@king_in_check
+    end
+    # three fold repetition
+    if @history.count(@history[0]) == 3 && @history.count(@history[1]) == 3
+      @game_over = true
+      puts "It's a draw"
+    end
+  end
+
+  def draw
+    opponent = @turn == 'white' ? 'black' : 'white'
+    puts "#{@turn.capitalize} player has offered a draw. Do you #{opponent} player accept? yes/no"
+    input = gets.chomp
+    if ['yes', 'y'].include?(input.downcase)
+      @game_over = true
+      puts "It's a draw"
+    end
+    exit if @game_over
+
+    puts "#{opponent.capitalize} player has declined to draw."
   end
 end
 

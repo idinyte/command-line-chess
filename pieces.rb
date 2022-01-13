@@ -16,8 +16,8 @@ class Pieces
     @en_pessante = ['', '']
     @white_pieces = get_white(board)
     @black_pieces = get_black(board)
-    @white_pieces = { 'a1' => Rook.new('white', board), 'e1' => King.new('white', board), 'h1' => Rook.new('white', board), 'a2' => Pawn.new('white', board) }
-    @black_pieces = { 'd7' => Queen.new('black', board) }
+    @white_pieces = { 'h5' => King.new('white', board) }
+    @black_pieces = { 'g8' => Queen.new('black', board), 'a1' => Queen.new('black', board), 'e4' => King.new('black', board), 'a5' =>  Rook.new('black', board), 'h4' => Pawn.new('black', board) }
   end
 
   def get_white(board)
@@ -117,9 +117,9 @@ class Rook
       possible_attack[i % 4] = forward if !enemies[forward].nil? && possible_attack[i % 4].nil?
       possible_attack[i % 4] = 'teammate' if !teammates[forward].nil? && possible_attack[i % 4].nil?
     end
+    possible_attack.reject!{ |a| a if a == 'teammate'}
     possible_attack.map! do |m|
       next if m.nil?
-      next(nil) if m == 'teammate'
 
       e = enemies[m]
       enemies.delete(m)
@@ -183,10 +183,12 @@ class Bishop
 
   def possible_attack(pos, teammates, enemies, p_m = nil, depth = 1)
     possible_attack = [nil, nil, nil, nil]
-    28.times do |index|
-      forward = "#{(pos[0].ord + @dir[index % 4][0]*((index + 4) / 4)).chr}#{pos[1].to_i + @dir[index % 4][1]*((index + 4) / 4)}"
-      possible_attack[index % 4] = forward if !enemies[forward].nil? && possible_attack[index % 4].nil?
+    28.times do |i|
+      forward = "#{(pos[0].ord + @dir[i % 4][0] * ((i + 4) / 4)).chr}#{pos[1].to_i + @dir[i % 4][1] * ((i + 4) / 4)}"
+      possible_attack[i % 4] = forward if !enemies[forward].nil? && possible_attack[i % 4].nil?
+      possible_attack[i % 4] = 'teammate' if !teammates[forward].nil? && possible_attack[i % 4].nil?
     end
+    possible_attack.reject!{ |a| a if a == 'teammate'}
     possible_attack.map! do |m|
       next if m.nil?
 
