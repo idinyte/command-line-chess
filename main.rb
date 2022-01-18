@@ -17,10 +17,11 @@ class Game
     @king_in_check_position = nil
     @history = (1..10).to_a
     @copy = []
-    play_premade
+    #play_premade
     play
   end
 
+  #for testing purposes
   def play_premade
     premade = [["h2", "h4"], ["e7", "e6"], ["h1", "h3"], ["d8", "h4"], ["e2", "e4"], ["h4", "e4"], ["d1", "e2"], ["b8", "c6"], ["g1", "f3"], ["c6", "d4"], ["g2", "g3"], ["a7", "a6"], ["f1", "g2"], ["e4", "f3"], ["a2", "a3"], ["f3", "g3"], ["b2", "b3"], ["g3", "h3"], ["c2", "c3"], ["h3", "c3"], ["a1", "a2"], ["c3", "b3"], ["d2", "d3"], ["b3", "a3"], ["b1", "c3"], ["a3", "c3"], ["c1", "d2"], ["h7", "h5"], ["g2", "f3"], ["h5", "h4"], ["f3", "g2"], ["h4", "h3"], ["g2", "f3"], ["h3", "h2"], ["f3", "g2"], ["h2", "h1"], ["e2", "f1"], ["h1", "f1"]]
 
@@ -134,7 +135,6 @@ class Game
   def update_history
     @history.push([@input1, @input2])
     @copy.push([@input1, @input2])
-    p @copy
     @history = @history.drop(1)
   end
 
