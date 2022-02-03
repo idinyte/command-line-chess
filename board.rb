@@ -20,7 +20,7 @@ class Board
   end
 
   def display(in_check, in_check_pos)
-    system 'clear'
+    #system 'clear'
     @king_in_check = in_check
     display_upper_graveyard
     display_board1(in_check, in_check_pos)

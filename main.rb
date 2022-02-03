@@ -3,14 +3,18 @@
 require_relative 'pieces'
 require_relative 'board'
 
+require 'json'
+
 # play chess
 class Game
+  attr_accessor :turn, :board, :king_in_check, :king_in_check_position
   attr_reader :game
 
   def initialize
     @game_over = false
     @turn = 'white'
     @board = Board.new
+    @restart = false
     @input1 = nil
     @input2 = nil
     @king_in_check = false
@@ -36,7 +40,7 @@ class Game
       @input2 = i2
       @board.input = i2
       move
-      @board.reset_colors(@king_in_check, @king_in_check_position, @team[@input2].name)
+      #@board.reset_colors(@king_in_check, @king_in_check_position, @team[@input2].name)
       enemy_in_check?
       game_over?
       @turn = @turn == 'white' ? 'black' : 'white'
@@ -50,7 +54,7 @@ class Game
       teammates_enemies
       get_inputs
       move
-      @board.reset_colors(@king_in_check, @king_in_check_position, @team[@input2].name)
+      #@board.reset_colors(@king_in_check, @king_in_check_position, @team[@input2].name)
       enemy_in_check?
       game_over?
       @turn = @turn == 'white' ? 'black' : 'white'
@@ -66,9 +70,10 @@ class Game
 
   def input1
     input = gets.chomp
+    action(input) if %w[exit draw save load].include?(input)
     while @team[input].nil?
-      action(input) if %w[exit draw save].include?(input)
-      puts "#{@turn.capitalize} player, please select your piece"
+      action(input) if %w[exit draw save load].include?(input)
+      puts warning_message(input)
       input = gets.chomp
     end
     @board.input = input
@@ -77,15 +82,26 @@ class Game
 
   def input2
     second_input = gets.chomp
-    action(second_input) if %w[exit draw save].include?(second_input)
+    action(second_input) if %w[exit draw save load].include?(second_input)
     while @team[second_input].nil?
-      action(second_input) if %w[exit draw save].include?(second_input)
+      action(second_input) if %w[exit draw save load].include?(second_input)
       break if @board.pieces.possible_moves.include?(second_input)
 
-      puts 'Invalid move'
+      puts warning_message(second_input)
       second_input = gets.chomp
     end
     manage_inputs(second_input)
+  end
+
+  def warning_message(input)
+    case input
+    when 'load' && !File.size('save.dat').zero?
+      'game loaded!'
+    when 'save'
+      'game saved!'
+    else
+      'wrong input'
+    end
   end
 
   def manage_inputs(second_input)
@@ -101,6 +117,12 @@ class Game
     case second_input
     when 'exit'
       exit
+    when 'save'
+      save_game
+    when 'load'
+      load_game
+      teammates_enemies
+      @board.display(@king_in_check, @king_in_check_pos)
     when 'draw'
       offer_draw
     end
@@ -222,6 +244,22 @@ class Game
     exit if @game_over
 
     puts "#{opponent.capitalize} player has declined to draw."
+  end
+
+  def save_game
+    save_file = File.open('save.dat', 'w')
+    save_file.write(Marshal.dump(self))
+    save_file.close
+  end
+
+  def load_game
+    return if File.size('save.dat').zero?
+
+    game_object = Marshal.load(File.read('save.dat'))
+    @board = game_object.board
+    @turn = game_object.turn
+    @king_in_check = game_object.king_in_check
+    @king_in_check_position = game_object.king_in_check_position
   end
 end
 

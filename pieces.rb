@@ -2,8 +2,8 @@
 
 # initialize chess pieces
 class Pieces
-  attr_reader :white_pieces, :black_pieces
-  attr_accessor :possible_moves, :possible_attack, :white_graveyard, :black_graveyard, :en_pessante
+  attr_accessor :possible_moves, :possible_attack, :white_graveyard,
+                :black_graveyard, :white_pieces, :black_pieces, :en_pessante
 
   def initialize(board)
     @board = board
@@ -300,10 +300,8 @@ class King
     return unless @moves.zero? && !@board.king_in_check
 
     col = @color == 'white' ? '1' : '8'
-    left = ["b#{col}", "c#{col}", "d#{col}"]
-    right = ["f#{col}", "g#{col}"]
-    left.select! { |l| team.include?(l) }
-    right.select! { |r| team.include?(r) }
+    left = ["b#{col}", "c#{col}", "d#{col}"].select { |l| team.include?(l) }
+    right = ["f#{col}", "g#{col}"].select { |r| team.include?(r) }
     l_w = get_in_watch(team, enemies).include?("d#{col}")
     r_w = get_in_watch(team, enemies).include?("f#{col}")
     if left.empty? && team.include?("a#{col}") && team["a#{col}"].name == 'rook' && team["a#{col}"].moves.zero? && !l_w
