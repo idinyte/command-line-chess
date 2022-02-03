@@ -16,11 +16,25 @@ class Board
     @labels = @grid.reverse.flatten
     @pieces = Pieces.new(self)
     @turn = 'white'
-    display(false, nil)
+    display_introductions
+    display(false, nil, clear: false)
   end
 
-  def display(in_check, in_check_pos)
-    #system 'clear'
+  def display_introductions
+    system 'clear'
+    puts "Game looks best when played in default Ubuntu terminal!
+
+Make a move by selecting a square e.g. e2 and select a valid move e.g. e4
+At any point during the game you have available commands:
+draw - offer a draw
+save - save current game state
+load - load last saved game
+exit - exit the game
+  "
+  end
+
+  def display(in_check, in_check_pos, clear: true)
+    system 'clear' if clear
     @king_in_check = in_check
     display_upper_graveyard
     display_board1(in_check, in_check_pos)

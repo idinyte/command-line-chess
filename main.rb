@@ -20,32 +20,7 @@ class Game
     @king_in_check = false
     @king_in_check_position = nil
     @history = (1..10).to_a
-    @copy = []
-    #play_premade
     play
-  end
-
-  #for testing purposes
-  def play_premade
-    premade = [["h2", "h4"], ["e7", "e6"], ["h1", "h3"], ["d8", "h4"], ["e2", "e4"], ["h4", "e4"], ["d1", "e2"], ["b8", "c6"], ["g1", "f3"], ["c6", "d4"], ["g2", "g3"], ["a7", "a6"], ["f1", "g2"], ["e4", "f3"], ["a2", "a3"], ["f3", "g3"], ["b2", "b3"], ["g3", "h3"], ["c2", "c3"], ["h3", "c3"], ["a1", "a2"], ["c3", "b3"], ["d2", "d3"], ["b3", "a3"], ["b1", "c3"], ["a3", "c3"], ["c1", "d2"], ["h7", "h5"], ["g2", "f3"], ["h5", "h4"], ["f3", "g2"], ["h4", "h3"], ["g2", "f3"], ["h3", "h2"], ["f3", "g2"], ["h2", "h1"], ["e2", "f1"], ["h1", "f1"]]
-
-    premade.each do |i1, i2|
-      puts "#{@turn}\'s turn"
-      @team = @board.pieces.white_pieces
-      @enemy = @board.pieces.black_pieces
-      @team, @enemy = @enemy, @team if @turn == 'black'
-      @input1 = i1
-      @board.input = @input1
-      show_guidlines
-      @input2 = i2
-      @board.input = i2
-      move
-      #@board.reset_colors(@king_in_check, @king_in_check_position, @team[@input2].name)
-      enemy_in_check?
-      game_over?
-      @turn = @turn == 'white' ? 'black' : 'white'
-      @board.turn = @turn
-    end
   end
 
   def play
@@ -54,7 +29,6 @@ class Game
       teammates_enemies
       get_inputs
       move
-      #@board.reset_colors(@king_in_check, @king_in_check_position, @team[@input2].name)
       enemy_in_check?
       game_over?
       @turn = @turn == 'white' ? 'black' : 'white'
@@ -95,8 +69,8 @@ class Game
 
   def warning_message(input)
     case input
-    when 'load' && !File.size('save.dat').zero?
-      'game loaded!'
+    when 'load'
+      File.size('save.dat').zero? ? 'previous save has not been found' : "game loaded! \n\n#{@turn.capitalize}\'s turn"
     when 'save'
       'game saved!'
     else
@@ -156,7 +130,6 @@ class Game
 
   def update_history
     @history.push([@input1, @input2])
-    @copy.push([@input1, @input2])
     @history = @history.drop(1)
   end
 
