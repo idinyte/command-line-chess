@@ -17,9 +17,13 @@ Choose a valid move or another piece by typing coordinates again and pressing en
 
 Type these special commands any time during the game
 
-draw - offer a draw
-save - to save the game
-load - to load last saved game
-exit - to exit the game
+```draw``` - offer a draw
+
+```save``` - to save the game
+
+```load``` - to load last saved game
+
+```exit``` - to exit the game
+
 
 
