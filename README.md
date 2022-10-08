@@ -2,13 +2,11 @@ Two player chess game played in terminal.
 This project is part of [The Odin Project](https://www.theodinproject.com) curriculum
 
 ## Intallation
-For best experience clone repository and run
+Clone repository and run
 
 ```$ ruby main.rb```
 
 ruby must be installed beforehand.
-
-Otherwise you can try the game in [replit](https://replit.com/@idinyte/command-line-chess-2)
 
 ## Controls
 
